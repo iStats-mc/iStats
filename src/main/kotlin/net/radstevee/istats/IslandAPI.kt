@@ -9,11 +9,12 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import net.minecraft.util.Identifier
 import net.radstevee.istats.util.UID
 import java.util.UUID
 
 @Serializable
-data class Player(
+data class IslandPlayer(
     val uuid: UID,
     val username: String?,
     val ranks: List<Rank>,
@@ -21,10 +22,13 @@ data class Player(
     val status: Status?,
     val collections: Collections?,
     val social: Social?,
-)
+) {
+    val primaryRank = ranks.maxByOrNull { it.ordinal } ?: Rank.DEFAULT
+}
 
 @Serializable
 enum class Rank {
+    DEFAULT,
     CHAMP,
     GRAND_CHAMP,
     GRAND_CHAMP_ROYALE,
@@ -32,6 +36,9 @@ enum class Rank {
     CONTESTANT,
     MODERATOR,
     NOXCREW,
+    ;
+
+    val texture = Identifier.of("istats", "textures/rank/${name.lowercase()}.png")
 }
 
 @Serializable
@@ -79,14 +86,19 @@ enum class ServerCategory {
 }
 
 @Serializable
-enum class Game {
-    HOLE_IN_THE_WALL,
-    TGTTOS,
-    BATTLE_BOX,
-    SKY_BATTLE,
-    PARKOUR_WARRIOR,
-    DYNABALL,
-    ROCKET_SPLEEF,
+enum class Game(
+    val displayName: String,
+) {
+    HOLE_IN_THE_WALL("Hole in the Wall"),
+    TGTTOS("TGTTOS"),
+    BATTLE_BOX("Battle Box"),
+    SKY_BATTLE("Sky Battle"),
+    PARKOUR_WARRIOR("Parkour Warrior"),
+    DYNABALL("Dynaball"),
+    ROCKET_SPLEEF("Rocket Spleef Rush"),
+    ;
+
+    val texture = Identifier.of("istats", "textures/game/${name.lowercase()}.png")
 }
 
 @Serializable
@@ -128,14 +140,17 @@ private val client =
             json()
         }
     }
-
 private const val API_BASE_URL = "http://localhost:8080/player"
 
 suspend fun getPlayer(player: UUID) = getPlayer(player.toString())
 
-suspend fun getPlayer(player: String): Player? {
-    val response = client.get("$API_BASE_URL/$player")
-    if (response.status != HttpStatusCode.OK) return null
+suspend fun getPlayer(player: String): Result<IslandPlayer> {
+    val response =
+        runCatching { client.get("$API_BASE_URL/$player") }
+            .onFailure { exception ->
+                return Result.failure(exception)
+            }.getOrThrow()
+    if (response.status != HttpStatusCode.OK) return Result.failure(IllegalArgumentException("Invalid player"))
 
-    return response.body<Player>()
+    return runCatching { response.body<IslandPlayer>() }
 }
