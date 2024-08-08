@@ -86,12 +86,13 @@ class PlayerStatisticScreen(
                 val (texture, text) =
                     when (islandPlayer.status.server.associatedGame) {
                         Game.BATTLE_BOX -> Game.BATTLE_BOX.texture to Text.literal("In the Battle Box lobby")
-                        Game.TGTTOS -> Game.BATTLE_BOX.texture to Text.literal("In the TGTTOS lobby")
-                        Game.DYNABALL -> Game.BATTLE_BOX.texture to Text.literal("In the Dynaball Lobby")
-                        Game.SKY_BATTLE -> Game.BATTLE_BOX.texture to Text.literal("In the Sky Battle Lobby")
-                        Game.ROCKET_SPLEEF -> Game.BATTLE_BOX.texture to Text.literal("In the RSR Lobby")
-                        Game.HOLE_IN_THE_WALL -> Game.BATTLE_BOX.texture to Text.literal("In the HITW lobby")
+                        Game.TGTTOS -> Game.TGTTOS.texture to Text.literal("In the TGTTOS lobby")
+                        Game.DYNABALL -> Game.DYNABALL.texture to Text.literal("In the Dynaball Lobby")
+                        Game.SKY_BATTLE -> Game.SKY_BATTLE.texture to Text.literal("In the Sky Battle Lobby")
+                        Game.ROCKET_SPLEEF -> Game.ROCKET_SPLEEF.texture to Text.literal("In the RSR Lobby")
+                        Game.HOLE_IN_THE_WALL -> Game.HOLE_IN_THE_WALL.texture to Text.literal("In the HITW lobby")
                         Game.PARKOUR_WARRIOR -> Game.PARKOUR_WARRIOR.texture to Text.literal("In the Parkour Warrior lobby")
+                        Game.LOBBY -> error("How the fuck did that happen?? Associated server game from a game server is lobby. ???")
                         null -> Identifier.of("istats", "textures/misc/main_island.png") to Text.literal("On the Main Island")
                     }
 

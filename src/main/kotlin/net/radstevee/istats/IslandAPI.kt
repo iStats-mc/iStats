@@ -9,6 +9,8 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.datetime.Instant
 import kotlinx.serialization.Serializable
+import net.minecraft.client.MinecraftClient
+import net.minecraft.text.Text
 import net.minecraft.util.Identifier
 import net.radstevee.istats.util.UID
 import java.util.UUID
@@ -89,14 +91,111 @@ enum class ServerCategory {
 enum class Game(
     val displayName: String,
 ) {
-    HOLE_IN_THE_WALL("Hole in the Wall"),
-    TGTTOS("TGTTOS"),
-    BATTLE_BOX("Battle Box"),
-    SKY_BATTLE("Sky Battle"),
-    PARKOUR_WARRIOR("Parkour Warrior"),
-    DYNABALL("Dynaball"),
-    ROCKET_SPLEEF("Rocket Spleef Rush"),
+    HOLE_IN_THE_WALL("Hole in the Wall") {
+        override fun getPlayerNames(usernames: List<Text>) =
+            buildList {
+                usernames.forEach { username ->
+                    println(Text.Serialization.toJsonString(username, MinecraftClient.getInstance().networkHandler!!.registryManager))
+
+                    username.siblings
+                        ?.firstOrNull()
+                        ?.siblings
+                        ?.firstOrNull()
+                        ?.siblings
+                        ?.getOrNull(3)
+                        ?.string
+                        ?.also(::add)
+                }
+            }
+    },
+    TGTTOS("TGTTOS") {
+        override fun getPlayerNames(usernames: List<Text>) = LOBBY.getPlayerNames(usernames)
+    },
+    BATTLE_BOX("Battle Box") {
+        override fun getPlayerNames(usernames: List<Text>) =
+            buildList {
+                usernames.forEach { username ->
+                    username.siblings
+                        .firstOrNull()
+                        ?.siblings
+                        ?.firstOrNull()
+                        ?.siblings
+                        ?.getOrNull(4)
+                        ?.takeIf {
+                            Regex("^[a-zA-Z0-9_]{2,16}\$").matches(it.string)
+                        }?.let(Text::getString)
+                        ?.also(::add)
+                }
+            }
+    },
+    SKY_BATTLE("Sky Battle") {
+        override fun getPlayerNames(usernames: List<Text>) =
+            buildList {
+                usernames.forEach { username ->
+                    if (username.siblings.isEmpty() && username.string?.isNotBlank() == true) add(username.string)
+                    username.siblings
+                        .firstOrNull()
+                        ?.siblings
+                        ?.getOrNull(4)
+                        ?.takeIf {
+                            Regex("^[a-zA-Z0-9_]{2,16}\$").matches(it.string)
+                        }?.let(Text::getString)
+                        ?.also(::add)
+                }
+            }
+    },
+    PARKOUR_WARRIOR("Parkour Warrior") {
+        override fun getPlayerNames(usernames: List<Text>) = LOBBY.getPlayerNames(usernames)
+    },
+    DYNABALL("Dynaball") {
+        override fun getPlayerNames(usernames: List<Text>): List<String> {
+            usernames.forEach {
+                println(Text.Serialization.toJsonString(it, MinecraftClient.getInstance().networkHandler!!.registryManager))
+            }
+
+            return emptyList()
+        }
+    },
+    ROCKET_SPLEEF("Rocket Spleef Rush") {
+        override fun getPlayerNames(usernames: List<Text>) =
+            buildList {
+                usernames.forEach { username ->
+                    if (username.siblings.isEmpty() && username.string?.isNotBlank() == true) add(username.string)
+                    username.siblings
+                        .firstOrNull()
+                        ?.siblings
+                        ?.getOrNull(1)
+                        ?.siblings
+                        ?.getOrNull(1)
+                        ?.siblings
+                        ?.getOrNull(3)
+                        ?.let(Text::getString)
+                        ?.also(::add)
+
+                    username.siblings
+                        ?.getOrNull(1)
+                        ?.siblings
+                        ?.getOrNull(1)
+                        ?.siblings
+                        ?.getOrNull(3)
+                        ?.let(Text::getString)
+                        ?.also(::add)
+                }
+            }.distinct()
+    },
+
+    LOBBY("Lobby") {
+        override fun getPlayerNames(usernames: List<Text>) =
+            usernames.mapNotNull { username ->
+                username.siblings
+                    ?.getOrNull(4)
+                    ?.string
+                    ?.takeUnless { it == "kotlin.Unit" } // LOL
+            }
+    },
     ;
+
+    abstract fun getPlayerNames(usernames: List<Text>): List<String>
 
     val texture = Identifier.of("istats", "textures/game/${name.lowercase()}.png")
 }

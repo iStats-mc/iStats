@@ -3,9 +3,9 @@
 	"id": "istats",
 	"version": "${version}",
 	"name": "iStats",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "All your MCC: Island statistics - Directly in game!",
 	"authors": [
-		"Me!"
+		"radstevee"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
@@ -32,7 +32,5 @@
 		"fabric-api": "*",
 		"fabric-language-kotlin": "*"
 	},
-	"suggests": {
-		"another-mod": "*"
-	}
+	"accessWidener": "istats.accesswidener"
 }
