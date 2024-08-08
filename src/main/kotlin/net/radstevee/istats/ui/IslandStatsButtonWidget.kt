@@ -2,9 +2,8 @@ package net.radstevee.istats.ui
 
 import net.minecraft.client.MinecraftClient
 import net.minecraft.client.gui.widget.ButtonWidget
-import net.minecraft.client.network.PlayerListEntry
 import net.minecraft.text.Text
-import net.radstevee.istats.util.currentGame
+import net.radstevee.istats.util.alivePlayersInGame
 
 class IslandStatsButtonWidget(
     x: Int,
@@ -19,16 +18,7 @@ class IslandStatsButtonWidget(
         height,
         text,
         {
-            currentGame()
-                .getPlayerNames(
-                    MinecraftClient
-                        .getInstance()
-                        .networkHandler!!
-                        .playerList
-                        .mapNotNull(PlayerListEntry::getDisplayName),
-                ).also {
-                    MinecraftClient.getInstance().player?.sendMessage(Text.literal("Alive players ingame: $it"))
-                }
+            MinecraftClient.getInstance().player?.sendMessage(Text.literal("Alive players ingame: ${alivePlayersInGame()}"))
         },
         DEFAULT_NARRATION_SUPPLIER,
     )
